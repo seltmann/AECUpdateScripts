@@ -27,17 +27,15 @@ if (($handle = fopen("oldFieldHost.tsv", "r")) !== FALSE) {
 	$HostAuthorFile= $data[4];
 	print $HostFamilyFile . "\n";
 	if ($HostSubSpeciesFile != '' || $HostSpeciesFile !=''){
-		$value = sameAuthor($HostFamilyFile,$HostGenusFile,$HostSpeciesFile,$HostSubSpeciesFile,$HostAuthorFile);
+		$value = sameAuthor($HostFamilyFile,$HostGenusFile,$HostSpeciesFile,$HostSubSpeciesFile,$HostAuthorFile,$HostFamilyFile);
 				while ($row =& $value->fetchRow()){
-					$authorHostMNL = 'Nothing';
-					$HostMNLUID= 'Nothing';
-					$genusHostMNL='Nothing';
 					$HostMNLUID=$row[0];
 					$genusHostMNL=$row[1];
 					$speciesHostMNL=$row[2];
 					$subspeciesHostMNL=$row[3];
 					$authorHostMNL=$row[4];
-					$output .= $HostMNLUID . "\t" . $genusHostMNL . "\t" . $speciesHostMNL . "\t" .  $subspeciesHostMNL . "\t" .  $authorHostMNL . "\n";
+					$familyHostMNL=$row[5];
+					$output .= $HostMNLUID . "\t" . $familyHostMNL . "\t" . $genusHostMNL . "\t" . $speciesHostMNL . "\t" .  $subspeciesHostMNL . "\t" .  $authorHostMNL . "\n";
 						}
 	}else{
 		$output .=  "nothing to do" . "\n";
@@ -47,18 +45,18 @@ if (($handle = fopen("oldFieldHost.tsv", "r")) !== FALSE) {
 	}
 			
 			
-		$header = "HostMNLUID" . "\t" . "genusHostMNL" . "\t" .  "speciesHostMNL" . "\t" .  "subspeciesHostMNL" . "\t" .  "authorHostMNL" . "\n" . $output;
+		$header = "HostMNLUID" . "\t" . "familyHostMNL" . "\t" .  "genusHostMNL" . "\t" .  "speciesHostMNL" . "\t" .  "subspeciesHostMNL" . "\t" .  "authorHostMNL" . "\n" . $output;
 		// // 
 		fwrite($fp, $header);
 
 
-function sameAuthor($HostFamilyFile,$HostGenusFile,$HostSpeciesFile,$HostSubSpeciesFile,$HostAuthorFile){
+function sameAuthor($HostFamilyFile,$HostGenusFile,$HostSpeciesFile,$HostSubSpeciesFile,$HostAuthorFile,$HostFamilyFile){
 	global $DB;
 	
 	if ($HostSubSpeciesFile !=''){
-		$sql = "Select ifnull(F1.HostMNLUID,'none'), ifnull(F3.HostTaxName,'none'),ifnull(F2.HostTaxName,'none'),ifnull(F1.HostTaxName,'none'),ifnull(F1.HostAuthor,'none') from Flora_MNL F1 left join Flora_MNL F2 on F1.HostParentID=F2.HostMNLUID left join Flora_MNL F3 on F2.HostParentID=F3.HostMNLUID where F1.HostTaxName = '$HostSubSpeciesFile' and F1.HostAuthor !='$HostAuthorFile' and F2.HostTaxName='$HostSpeciesFile' and F3.HostTaxName='$HostGenusFile'";
+		$sql = "Select ifnull(F1.HostMNLUID,'none'), ifnull(F3.HostTaxName,'none'),ifnull(F4.HostTaxName,'none'),ifnull(F2.HostTaxName,'none'),ifnull(F1.HostTaxName,'none'),ifnull(F4.HostAuthor,'none') from Flora_MNL F1 left join Flora_MNL F2 on F1.HostParentID=F2.HostMNLUID left join Flora_MNL F3 on F2.HostParentID=F3.HostMNLUID left join Flora_MNL F4 on F3.HostParentID=F4.HostMNLUID where F1.HostTaxName = '$HostSubSpeciesFile' and F1.HostAuthor !='$HostAuthorFile' and F2.HostTaxName='$HostSpeciesFile' and F3.HostTaxName='$HostGenusFile' and F4.HostTaxName='$HostFamilyFile'";
 	}else{
-		$sql = "Select F1.HostMNLUID, F2.HostTaxName, F1.HostTaxName, concat('no subspecies'),F1.HostAuthor from Flora_MNL F1 left join Flora_MNL F2 on F1.HostParentID=F2.HostMNLUID where F1.HostTaxName = '$HostSpeciesFile' and F1.HostAuthor !='$HostAuthorFile' and F2.HostTaxName='$HostGenusFile'";
+		$sql = "Select F1.HostMNLUID, F2.HostTaxName, F1.HostTaxName, concat('no subspecies'),F1.HostAuthor,ifnull(F3.HostAuthor,'none'),F3.HostTaxName  from Flora_MNL F1 left join Flora_MNL F2 on F1.HostParentID=F2.HostMNLUID left join Flora_MNL F3 on F2.HostParentID=F3.HostMNLUID where F1.HostTaxName = '$HostSpeciesFile' and F1.HostAuthor !='$HostAuthorFile' and F2.HostTaxName='$HostGenusFile' and F3.HostTaxName='$HostFamilyFile'";
 	}
 		$resultsGetName = $DB->query($sql);
 		print $sql;
