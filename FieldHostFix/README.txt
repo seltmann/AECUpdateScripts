@@ -46,3 +46,6 @@ pbi_localityOLD fieldhost table
 Select F1.HostMNLUID, F3.HostTaxName,F2.HostTaxName,F1.HostTaxName,F1.HostAuthor from Flora_MNL F1 left join Flora_MNL F2 on F1.HostParentID=F2.HostMNLUID left join Flora_MNL F3 on F2.HostParentID=F3.HostMNLUID where F1.HostTaxName = 'angustissima' and F1.HostAuthor ='Jacq.' and F2.HostTaxName='viscosa' and F3.HostTaxName='Dodonaea';
 
 Select F1.HostMNLUID, F2.HostTaxName, F1.HostTaxName, concat('no subspecies'),F1.HostAuthor from Flora_MNL F1 left join Flora_MNL F2 on F1.HostParentID=F2.HostMNLUID where F1.HostTaxName ='rosum' and F1.HostAuthor !='(P.J.Bergius) Less.' and F2.HostTaxName='Helichrysum'
+
+mysql -u root pbi_localityOLD < getFieldHostTable.sql -p > OLDFieldHost.txt
+
