@@ -49,12 +49,12 @@ if (($handle = fopen("OLDFieldHost.txt", "r")) !== FALSE) {
 	$sameAuthor = sameAuthor($FieldHostUID,$history,$HostSSp,$HostAuthor,$HostSp);
 //	foreach($sameTaxonName as $n){$n;}
 
-				$output .= $FieldHostUID . "\t" . $sameFieldHostInformationValue . "\t" . $sameCreateValues . "\t" . $sameUpdateValues . "\t" . $sameTaxonName . "\t" . $sameAuthor . "\n";
+				$output .= $FieldHostUID . "\t" . $sameFieldHostInformationValue . "\t" . $sameCreateValues . "\t" . $sameUpdateValues . "\t" . $sameTaxonName . "\t" . $sameAuthor . "\t" . $history . "\n";
 //print $output;
 			}
 		}
 		
-$header = "FieldHostUID" . "\t" . "hostUID_coleventUID_HostNumber" . "\t" . "sameCreateValues" . "\t" . "sameCreateValues" . "\t" . "sameTaxon" . "\t" . "sameAuthor" . "\n" . $output;
+$header = "FieldHostUID" . "\t" . "hostUID_coleventUID_HostNumber" . "\t" . "sameCreateValues" . "\t" . "sameCreateValues" . "\t" . "sameTaxon" . "\t" . "sameAuthor" . "\t" . "history to update" . "\n" . $output;
  	fwrite($fp, $header);
 
 function sameAuthor($FieldHostUID,$history,$HostSSp,$HostAuthor,$HostSp){
@@ -62,12 +62,18 @@ function sameAuthor($FieldHostUID,$history,$HostSSp,$HostAuthor,$HostSp){
 		$author = explode(";",$history);
 		if($HostSSp != '0' && $HostAuthor != '0'){
 			$authorString = $author[4];
-			$sql = "Select FieldHostUID from FieldHost left join Flora_MNL on FieldHost.HostSSp=Flora_MNL.HostMNLUID where Flora_MNL.HostAuthor='$authorString' and FieldHost.FieldHostUID='$FieldHostUID';";
+			$authorString = str_replace(' ', '', $authorString);
+			$authorString = str_replace('.', '', $authorString);
+			$authorString = trim($authorString);
+			$sql = "Select FieldHostUID from FieldHost left join Flora_MNL on FieldHost.HostSSp=Flora_MNL.HostMNLUID where replace(replace(trim(Flora_MNL.HostAuthor),' ',''),'.','')='$authorString' and FieldHost.FieldHostUID='$FieldHostUID';";
 		}elseif($HostSSp == '0' && $HostSp != '0' && $HostAuthor != '0'){
 			$authorString = $author[3];
-			$sql = "Select FieldHostUID from FieldHost left join Flora_MNL on FieldHost.HostSp=Flora_MNL.HostMNLUID where Flora_MNL.HostAuthor='$authorString' and FieldHost.FieldHostUID='$FieldHostUID';";
+			$authorString = str_replace(' ', '', $authorString);
+			$authorString = str_replace('.', '', $authorString);
+			$authorString = trim($authorString);
+			$sql = "Select FieldHostUID from FieldHost left join Flora_MNL on FieldHost.HostSp=Flora_MNL.HostMNLUID where replace(replace(trim(Flora_MNL.HostAuthor),' ',''),'.','')='$authorString' and FieldHost.FieldHostUID='$FieldHostUID';";
 		}else{
-			$authorString = 'No Author on Old Field HOst table';
+			$authorString = 'No Author on Old Field Host table';
 			return $authorString;
 		}
 		
@@ -85,10 +91,16 @@ function sameTaxon($FieldHostUID,$history,$HostSSp,$HostF,$HostG,$HostSp){
 		if($HostG != '0'){$G = $taxonString[1];}else{$G = '0';}
 		if($HostSp != '0'){$Sp = $taxonString[2];}else{$Sp = '0';}					
 		if($HostSSp != '0'){$SSp = $taxonString[3];}else{$SSp = '0';}
-	//	return $F . " " . $G . " " . $Sp . " " . $SSp;
-			
-			$sql = "select FieldHost.FieldHostUID from FieldHost left join Flora_MNL F1 on FieldHost.HostF=F1.HostMNLUID left join  Flora_MNL F2 on FieldHost.HostG=F2.HostMNLUID  left join Flora_MNL F3 on FieldHost.HostSp=F3.HostMNLUID left join  Flora_MNL F4 on FieldHost.HostSSp=F4.HostMNLUID where F1.HostMNLUID='$Sp' and F2.HostMNLUID='$G' and F3.HostMNLUID='$Sp' and F4.HostMNLUID='$SSp' and FieldHost.FieldHostUID='$FieldHostUID'";
-			
+		// $F . " " . $G . " " . $Sp . " " . $SSp;
+	if($SSp != '0'){	
+			$sql = "select FieldHost.FieldHostUID from FieldHost left join Flora_MNL F1 on FieldHost.HostF=F1.HostMNLUID left join  Flora_MNL F2 on FieldHost.HostG=F2.HostMNLUID  left join Flora_MNL F3 on FieldHost.HostSp=F3.HostMNLUID left join  Flora_MNL F4 on FieldHost.HostSSp=F4.HostMNLUID where F1.HostTaxName='$F' and F2.HostTaxName='$G' and F3.HostTaxName='$Sp' and F4.HostTaxName='$SSp' and FieldHost.FieldHostUID='$FieldHostUID'";
+	}elseif($SSp == '0'){
+			$sql = "select FieldHost.FieldHostUID from FieldHost left join Flora_MNL F1 on FieldHost.HostF=F1.HostMNLUID left join  Flora_MNL F2 on FieldHost.HostG=F2.HostMNLUID  left join Flora_MNL F3 on FieldHost.HostSp=F3.HostMNLUID where F1.HostTaxName='$F' and F2.HostTaxName='$G' and F3.HostTaxName='$Sp' and FieldHost.FieldHostUID='$FieldHostUID'";
+		}else{
+			return "no find";
+			break;
+		}
+		
 		$result = $DB->query($sql);
 	    if (PEAR::isError($result)) { die("DB Error - sameTaxon" . $results->getMessage()); }
 	if ($DB->getOption('result_buffering')) {
@@ -121,7 +133,7 @@ function sameCreate($FieldHostUID,$CreateDate,$CreatedBy){
 #select count if it is a match, if not return "basic information not found"
 function sameFieldHostInformation($FieldHostUID,$ColEventUID,$HostNumber,$HerbID,$HostDetBy){
 	global $DB;
-			$sql = "Select FieldHostUID from FieldHost where FieldHostUID='$FieldHostUID' and ColEventUID='$ColEventUID' and HostNumber='$HostNumber' and HerbID='$HerbID' and HostDetBy='$HostDetBy'";
+			$sql = "Select FieldHostUID from FieldHost where FieldHostUID='$FieldHostUID' and ColEventUID='$ColEventUID' and trim(HostNumber)='$HostNumber' and (trim(HerbID)='$HerbID' or HerbID is NULL) and (trim(HostDetBy)='$HostDetBy' or HostDetBy is NULL)";
 	$result = $DB->query($sql);
     if (PEAR::isError($result)) { die("DB Error - sameFieldHostInformationValue" . $results->getMessage()); }
 	if ($DB->getOption('result_buffering')) {

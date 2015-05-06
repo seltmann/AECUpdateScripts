@@ -12,6 +12,9 @@ require_once("MDB2.php");
 require_once("DB.php");
 require_once("connection.php");
 
+#July 1, 2011 - March 31, 2013
+#April 1 2013 - March 31 2014
+#April 1 2014 - March 31 2015
 
  
 // === Main database connection and error handling ===
@@ -19,15 +22,15 @@ $DB =& MDB2::connect($dsn);
 if (PEAR::isError($DB)) { handleError($DB->getMessage()); }
 
 //make an output file
-$fp = fopen('tcnReport_v2.tsv', 'w');
+$fp = fopen('tcnReport_periodTwo.tsv', 'w');
 $output = '';
 
 //Report stuff
 echo "TTD-TCN NUMBERS FOR ANNUAL REPORT\n";
 $prefix_array = array("AMNH_IZC","AMNH_ENT","AMNH_PBI","UCR_ENT","UCRC_ENT","UDCC_NRI","UNSW_ENT","NCSUNCSU","UDCC_TCN","UKYL_TCN","CUIC_TCN","CSUC_TCN","CMNH_TCN","MEMU_ENT","BPBM_TCN","CSCA_TCN","UMAM_ENT","OSACOSAC","EMECEMEC","KUNHMENT","CASC_ENT","NCSU_ENT","DPI_FSCA","OMNH_RIV","PNG_ENT","ANSP_ENT");
 
-$start_date = "2014-04-01";
-$end_date = "2015-03-30";
+$start_date = "2013-04-01";
+$end_date = "2014-03-31";
 
 $output .= "Global Total for TTD-TCN Project Between '$start_date' and '$end_date': " . global_total($start_date,$end_date);
 
